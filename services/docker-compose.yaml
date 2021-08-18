@@ -1,0 +1,24 @@
+version: "3.5"
+services:
+  nginx:
+    container_name: nginx
+    image: nginx
+    ports:
+      - 443:443
+    volumes:
+      - ./etc/nginx:/etc/nginx/
+      - ./etc/letsencrypt/:/etc/letsencrypt
+      - logs-data:/etc/nginx/logs
+    external_links:
+      - wordpress
+    networks:
+      - frontend-network
+    healthcheck:
+      test: 'curl -k --connect-tomeout 5 --silent https://127.0.0.1 || exit 1'
+networks:
+  frontend-network:
+    external:
+      name: frontend-network
+
+volumes:
+  logs-data:

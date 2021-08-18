@@ -1,0 +1,28 @@
+version: "3.8"
+
+services:
+  mariadb:
+    container_name: mariadb-server
+    restart: always
+    hostname: mariadb
+    image: mariadb
+    volumes:
+      - mariadb-data:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=p@55w0rd
+    healthcheck:
+      test: 'echo "SELECT version():" | mysql -uroot -h localhost -p$$MYSQL_ROOT_PASSWORD'
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    networks:
+      - backbone-network
+
+networks:
+  backbone-network:
+    external:
+      name: backbone-network
+
+volumes:
+  mariadb-data:
+    driver: local

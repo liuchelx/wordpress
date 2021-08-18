@@ -1,0 +1,40 @@
+version: '3.5'
+
+services:
+  wordpress:
+    image: wordpress
+    restart: always
+    hostname: wordpress
+    container_name: wordpress
+    ports:
+      - 8080:80
+    volumes:
+      - wp-content:/var/www/html/wp-content
+    environment:
+      - WORDPRESS_DB_PASSWORD
+      - WORDPRESS_DB_USER=wordpress
+      - WORDPRESS_DB_HOST=mariadb-sverver:3306
+      - WORDPRESS_DB_NAME=wordpress
+    external_links:
+      - mariadb-server
+    #healthcheck:
+     # test: 'curl --connect-timeout 5 --silent http://127.0.0.1 || exit 1'
+     # interval: 5s
+     # timeout: 5s
+     # retries: 3
+
+    networks:
+      - database-network
+      - frontend-network
+
+networks:
+  database-network:
+    external:
+      name: backbone-network
+  frontend-network:
+    external:
+      name: frontend-network
+
+volumes:
+  wp-content:
+    driver: local

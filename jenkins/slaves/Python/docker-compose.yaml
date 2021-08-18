@@ -1,0 +1,30 @@
+version: '3.8'
+
+#新建.env 文件配置
+#JENKINS_AGENT_NAME agent name 要和Master里注册Agent name 一致
+#JENKINS_SECRET 连接密码，查看master里对应Node的详细信息
+#JENKINS_TUNNEL master的JNLP 监听端口
+
+services:
+  slave-python:
+    build:
+      context: .
+    image: tinybrick/jenkins/slave-python
+    container_name: jenkins-slave-python
+    restart: always
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - backbone-network
+    external_links:
+      - jenkins-master
+    environment:
+      - JENKINS_URL=http://jenkins-master:8080
+      - JENKINS_TUNNEL=jenkins-master:50000
+      - JENKINS_AGENT_NAME
+      - JENKINS_SECRET
+
+networks:
+  backbone-network:
+    external:
+      name: backbone-network

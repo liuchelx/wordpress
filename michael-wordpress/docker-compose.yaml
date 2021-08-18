@@ -1,0 +1,72 @@
+services:
+
+  # MySQL Database
+  mysqldb:
+    container_name: mysqldb-server
+    hostname: mysqldb
+    image: mysql:5.7
+    volumes:
+      - db_data:/var/lib/mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD
+      - MYSQL_DATABASE
+      - MYSQL_USER
+      - MYSQL_PASSWORD
+    healthcheck:
+      test: 'echo "SELECT version();"| mysql -uroot -h localhost -p$$MYSQL_ROOT_PASSWORD'
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    networks:
+      - wpsite
+
+  # Wordpress
+  wordpress:
+    image: wordpress:latest
+    container_name: wordpress
+    ports:
+      - '8080:80'
+    restart: always
+    volumes: ['/home/devops/mywp/wordpress/wp-content:/var/www/html']
+    environment:
+      - WORDPRESS_DB_HOST=mysqldb:3306
+      - WORDPRESS_DB_USER
+      - WORDPRESS_DB_PASSWORD
+    external_links:
+      - mysqldb-server
+    depends_on:
+      - mysqldb
+    hostname: wordpress
+    healthcheck:
+      test: 'curl --connect-timeout 5 --silent http://localhost || exit 1'
+      interval: 5s
+      timeout: 5s
+      retries: 3
+    networks:
+      - wpsite
+
+  # Nginx
+  nginx:
+    container_name: nginx
+    image: nginx
+    ports:
+      - 443:443
+    volumes:
+      - /home/devops/mywp/nginx/etc/webserver.conf:/etc/nginx/nginx.conf
+      - /home/devops/mywp/nginx/etc/pki/:/etc/pki/
+    external_links:
+      - wordpress
+    depends_on:
+      - wordpress
+      - mysqldb
+    healthcheck:
+      test: 'curl -k --connect-timeout 5 --silent https://127.0.0.1 || exit 1'
+    networks:
+      - wpsite
+
+
+networks:
+  wpsite:
+volumes:
+        db_data:
