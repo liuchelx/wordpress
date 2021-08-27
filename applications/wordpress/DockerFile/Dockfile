@@ -3,7 +3,6 @@ FROM php:8.0.1-apache
 EXPOSE 8080
 ENV WWW_ROOT=/var/www/html
 
-USER www-data
 
 WORKDIR ${WWW_ROOT}
 RUN curl -f -L https://en-ca.wordpress.org/latest-en_CA.tar.gz | tar -zxvf -
