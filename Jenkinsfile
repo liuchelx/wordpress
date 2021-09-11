@@ -68,9 +68,10 @@ pipeline {
         stage('Pushing to Repository') {
             steps {
                 echo 'Upload project'
-                withCredentials([usernamePassword(credentialsId:'nexus',passwordVariable:'nexuspassword',userNameVariable:'nexususer')])
-                sh 'docker login -u ${nexususer} -p &{nexuspassword}  150.230.33.152:8083'
-                sh 'docker push 150.230.33.152:8083/wordpress_pipe'
+                withCredentials([usernamePassword(credentialsId:'nexus',passwordVariable:'nexuspassword',userNameVariable:'nexususer')]){
+                    sh 'docker login -u ${nexususer} -p &{nexuspassword}  150.230.33.152:8083'
+                    sh 'docker push 150.230.33.152:8083/wordpress_pipe'
+                }
             }
         }
     }
