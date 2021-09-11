@@ -58,37 +58,16 @@ pipeline {
 
         stage('Build') {
             steps {
-                echo 'Build project'
-                //withPythonEnv("${workspace}/.venv/bin/"){
-                    dir("${workspace}") {
-                        sh 'pwd'
-                        sh 'docker build -t 150.230.33.152:8083/wordpress_pipe .'
-                    }
-                }
+                echo 'Build project'     
+                sh 'cd /var/jenkins/workspace/wordpress/applications/wordpress/DockerFile'
+                sh 'docker build -t 150.230.33.152:8083/wordpress_pipe .'   
             }
         }
 
         stage('Pushing to Repository') {
             steps {
                 echo 'Upload project'
-                //withPythonEnv("${workspace}/.venv/bin/"){
-                    dir("${workspace}") {
-                        withCredentials([usernamePassword(credentialsId: "${env.NEXUS_CREDENTIAL}", passwordVariable: 'pass', usernameVariable: 'user')]){
-                            sh '''cat << EOF > .env
-[distutils]
-    index-servers=
-        internal_pypi
-
-[internal_pypi]
-    repository: http://150.230.33.152:8081/repository/docker_pipe/
-    username: ${user}
-    password: ${pass}
-EOF'''
-
-                            sh 'docker push 150.230.33.152:8083/wordpress_pipe'
-                        }
-                    }
-                }
+                sh 'echo "${nexus_password}" | docker login -u admin --password-stdin  150.230.33.152:8083  `'
             }
         }
     }
