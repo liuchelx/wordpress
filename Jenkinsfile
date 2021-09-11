@@ -59,7 +59,7 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Build project'     
-                sh '/var/jenkins/workspace/Python-pipeline/applications/wordpress/DockerFile'
+                sh 'cd /var/jenkins/workspace/Python-pipeline/applications/wordpress/DockerFile'
                 sh 'docker build -t 150.230.33.152:8083/wordpress_pipe .'   
             }
         }
