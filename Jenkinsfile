@@ -51,41 +51,6 @@ pipeline {
             }
         }
 
-        /*** Install dependency for coverage and unittest(nosetests) and language checking*/
-
-        stage('Install testing dependency') {
-            steps {
-                echo 'Initial virtual environment'
-                dir("${workspace}") {
-                    sh "python3 -m venv .venv"
-                }
-
-                echo 'Install testing dependency'
-
-                /*** withPythonEnv 函数需要 Jenkins Pyenv plugin 支持*/
-
-                withPythonEnv("${workspace}/.venv/bin/"){
-                    dir("${workspace}") {
-                        sh 'pip install wheel nose coverage nosexcover pylint twine'
-                       // sh 'pip install -r requirements.txt'
-                        sh 'pip list'
-                    }
-                }
-            }
-        }
-
-        /**ocker* Run coverage or regular unit test*/
-        stage('Testing') {
-            steps {
-                echo 'Run test cases'
-                withPythonEnv("${workspace}/.venv/bin/"){
-                    dir("${workspace}") {
-                        // sh 'python setup.py test'
-                        sh 'nosetests -sv --with-xunit --xunit-file=nosetests.xml --with-xcoverage --xcoverage-file=coverage.xml'
-                    }
-                }
-            }
-        }
 
         /*** Package*
         * 关于 Python 版本规范：https://www.python.org/dev/peps/pep-0440/
@@ -94,9 +59,10 @@ pipeline {
         stage('Build') {
             steps {
                 echo 'Build project'
-                withPythonEnv("${workspace}/.venv/bin/"){
+                //withPythonEnv("${workspace}/.venv/bin/"){
                     dir("${workspace}") {
-                        sh 'python setup.py egg_info -b.dev$(date "+%s") bdist_wheel'
+                        sh 'pwd'
+                        sh 'docker build -t 150.230.33.152:8083/wordpress .'
                     }
                 }
             }
@@ -104,8 +70,8 @@ pipeline {
 
         stage('Pushing to Repository') {
             steps {
-                echo 'Upload Monitor'
-                withPythonEnv("${workspace}/.venv/bin/"){
+                echo 'Upload project'
+                //withPythonEnv("${workspace}/.venv/bin/"){
                     dir("${workspace}") {
                         withCredentials([usernamePassword(credentialsId: "${env.PYPI_CREDENTIAL}", passwordVariable: 'pass', usernameVariable: 'user')]){
                             sh '''cat << EOF > .pypirc
@@ -119,7 +85,7 @@ pipeline {
     password: ${pass}
 EOF'''
 
-                            sh 'twine upload --config-file=.pypirc -r internal_pypi dist/*'
+                            sh 'docker push 150.230.33.152:8083/wordpress'
                         }
                     }
                 }
