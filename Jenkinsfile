@@ -17,7 +17,7 @@ pipeline {
         GIT_URL       = 'https://github.com/liuchelx/wordpress.git'
         CREDENTIAL    = 'git'               //从jenkins credential拿来的，用于git登录
         BRANCH        = 'main'              //工作的branch
-        PYPI_CREDENTIAL = "nexus"              //同样从jenkins credential拿来的，用nexus登录
+        NEXUS_CREDENTIAL = "nexus"              //同样从jenkins credential拿来的，用nexus登录
     }
 
     /*** 编译过程由多个 Stage(阶段)构成.*/
@@ -62,7 +62,7 @@ pipeline {
                 //withPythonEnv("${workspace}/.venv/bin/"){
                     dir("${workspace}") {
                         sh 'pwd'
-                        sh 'docker build -t 150.230.33.152:8083/wordpress .'
+                        sh 'docker build -t 150.230.33.152:8083/wordpress_pipe .'
                     }
                 }
             }
@@ -73,19 +73,19 @@ pipeline {
                 echo 'Upload project'
                 //withPythonEnv("${workspace}/.venv/bin/"){
                     dir("${workspace}") {
-                        withCredentials([usernamePassword(credentialsId: "${env.PYPI_CREDENTIAL}", passwordVariable: 'pass', usernameVariable: 'user')]){
-                            sh '''cat << EOF > .pypirc
+                        withCredentials([usernamePassword(credentialsId: "${env.NEXUS_CREDENTIAL}", passwordVariable: 'pass', usernameVariable: 'user')]){
+                            sh '''cat << EOF > .env
 [distutils]
     index-servers=
         internal_pypi
 
 [internal_pypi]
-    repository: http://150.230.33.152:8081/repository/pypi/
+    repository: http://150.230.33.152:8081/repository/docker_pipe/
     username: ${user}
     password: ${pass}
 EOF'''
 
-                            sh 'docker push 150.230.33.152:8083/wordpress'
+                            sh 'docker push 150.230.33.152:8083/wordpress_pipe'
                         }
                     }
                 }
